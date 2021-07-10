@@ -34,10 +34,34 @@ router.post('/getToken', async function (req, res) {
 
 // Use express generator to run
 router.get('/malUserList', async function(req, res, next) {
-
-  res.send(await malRequest());
+  let token = req.query.token;
+  let name = await getUserName(token);
+  console.log("Token: " + token);
+  console.log("Username: " + name);
+  res.send(await malRequest(name, token));
 
 });
+
+router.get('/getUserName', async function(req, res, next) {
+  let token = req.query.token;
+  res.send(await getUserName(token));
+});
+
+async function getUserName(token) {
+  let url = "https://api.myanimelist.net/v2/users/@me";
+  var userReq = await fetch(url, {
+    method: 'GET',
+    mode: 'cors',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': token
+    }
+  });
+
+  let json = await userReq.json();
+  console.log("JSON: " + json);
+  return json.name;
+}
 
 async function malRequest(name, auth) {
   let baseUrl = "https://api.myanimelist.net/v2/";
@@ -46,6 +70,7 @@ async function malRequest(name, auth) {
   let username = name ? name : "NachoLife";
   // Create the url
   var url = baseUrl + "users/" + username + "/animelist";
+  console.log("GET: " + url);
 
   //Add fields
   url += "?fields=";
