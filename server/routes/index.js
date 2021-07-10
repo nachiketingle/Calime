@@ -33,7 +33,7 @@ router.post('/getToken', async function (req, res) {
 })
 
 // Use express generator to run
-router.get('/hi', async function (req, res, next) {
+router.get('/malUserList', async function(req, res, next) {
 
   res.send(await malRequest());
 
