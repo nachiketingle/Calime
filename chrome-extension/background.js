@@ -74,7 +74,8 @@ chrome.runtime.onMessage.addListener(
                     "client_id": clientID,
                     "code": authorization_code,
                     "code_verifier": code_challenge,
-                    "grant_type": "authorization_code"
+                    "grant_type": "authorization_code",
+                    "redirect_uri": redirectURL
                 }
 
                 // use auth code to trade in for an access token
@@ -87,9 +88,7 @@ chrome.runtime.onMessage.addListener(
                     body: JSON.stringify(data) // body data type must match "Content-Type" header
                 })
                     .then(res => res.json())
-                    .then(json => console.log(json));
-
-                sendResponse({ hehe: "xd" })
+                    .then(json => sendResponse(json));
             })
 
             return true;

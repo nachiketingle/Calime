@@ -1,6 +1,10 @@
 var express = require('express');
 var router = express.Router();
-const fetch = require('node-fetch')
+const fetch = require('node-fetch');
+var cors = require('cors');
+
+router.use(cors());
+
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
@@ -12,12 +16,14 @@ router.post('/getToken', async function (req, res) {
 
   console.log(req.body);
   // use auth code to trade in for an access token
+  let s = new URLSearchParams(Object.entries(req.body)).toString();
+  console.log(s)
   fetch(tokenURL, {
     method: 'POST', // *GET, POST, PUT, DELETE, etc.
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded'
     },
-    body: JSON.stringify(req.body) // body data type must match "Content-Type" header
+    body: s // body data type must match "Content-Type" header
   })
     .then(r => r.json())
     .then(json => {
@@ -48,8 +54,6 @@ async function malRequest(name, auth) {
     if (fields[f] != fields[fields.length - 1])
       url += ",";
   }
-
-  //url = "https://cors-anywhere.herokuapp.com/" + url;
 
   var malRes = await fetch(url, {
     method: 'GET',
