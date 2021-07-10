@@ -12,7 +12,7 @@ function getToken() {
         // try to get a token 
         chrome.storage.sync.get("token", function (data) {
             // if token cached
-            if (data) {
+            if (data.hasOwnProperty("token")) {
                 console.log("Using existing token");
                 let token = data.token["access_token"];
                 // get the username to check if token works
