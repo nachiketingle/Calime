@@ -20,7 +20,7 @@ changeColor.onclick = function(element) {
         console.log(response);
     });
 
-    getUserList('NachoLife', authToken);
+    // getUserList('NachoLife', authToken);
 };
 
 async function getUserList(username, authToken) {

@@ -1,14 +1,14 @@
 let color = '#3aa757'
 
 chrome.runtime.onInstalled.addListener(() => {
-    chrome.storage.sync.set({ color: color }, function() {
+    chrome.storage.sync.set({ color: color }, function () {
         console.log('Default background color set to %cgreen', `color: ${color}`);
     });
 
-    chrome.declarativeContent.onPageChanged.removeRules(undefined, function() {
+    chrome.declarativeContent.onPageChanged.removeRules(undefined, function () {
         chrome.declarativeContent.onPageChanged.addRules([{
             conditions: [new chrome.declarativeContent.PageStateMatcher({
-                pageUrl: {urlMatches: '.*'},
+                pageUrl: { urlMatches: '.*' },
             })
             ],
             actions: [new chrome.declarativeContent.ShowPageAction()]
@@ -67,10 +67,9 @@ chrome.runtime.onMessage.addListener(
                 url: authURL
             }, url => {
                 console.log("Authenticating user", url);
-
                 // parse the auth code
                 let authorization_code = getQueryVariable(url, 'code');
-                const tokenURL = "https://myanimelist.net/v1/oauth2/token";
+
                 let data = {
                     "client_id": clientID,
                     "code": authorization_code,
@@ -79,18 +78,16 @@ chrome.runtime.onMessage.addListener(
                 }
 
                 // use auth code to trade in for an access token
-                fetch(tokenURL, {
-                    method: 'POST', // *GET, POST, PUT, DELETE, etc.
-                    mode: 'no-cors', // no-cors, *cors, same-origin
-                    cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-                    credentials: 'same-origin', // include, *same-origin, omit
+                fetch('http://localhost:3000/getToken', {
+                    method: 'POST',
+                    mode: 'cors',
                     headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify(data) // body data type must match "Content-Type" header
                 })
-                    .then(res => res.text())
-                    .then(text => console.log(text));
+                    .then(res => res.json())
+                    .then(json => console.log(json));
 
                 sendResponse({ hehe: "xd" })
             })
