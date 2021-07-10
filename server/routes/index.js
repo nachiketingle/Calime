@@ -1,6 +1,10 @@
 var express = require('express');
 var router = express.Router();
-const fetch = require('node-fetch')
+const fetch = require('node-fetch');
+var cors = require('cors');
+
+router.use(cors());
+
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -29,8 +33,6 @@ async function malRequest(name, auth) {
       if(fields[f] != fields[fields.length - 1])
           url += ",";
   }
-
-  //url = "https://cors-anywhere.herokuapp.com/" + url;
   
   var malRes = await fetch(url, {
       method: 'GET',

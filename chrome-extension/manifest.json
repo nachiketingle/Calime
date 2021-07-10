@@ -3,6 +3,7 @@
     "version": "1.0",
     "description": "A calender for your anime schedule",
     "manifest_version": 2,
+    "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlhJWMWIxCV8uBPhvXI3mVII0lE2B120FgabPdpTs8CZf+O/obeue2nkKh/N9S8VN8sZH+IvQR0ntjZNGXKg/z4XccEX7ZiPGW1wF5pdkij18f0K8RSau6S63BiFRcSVTq9B12wtOzpbXcULcT9jHSArLAsE3fIrr+0MLjQ+MTluyqlck5ozc16iIZ4yxnJR+TFYJQ7S2c6hdNWo+IToD9GXYACPwlsSWOTd4WybysX/iudggDVHaGt/LS9h+7MuVQvrEDOOuTcHLiFiyepbToUreZEIAt/rLMd3m33EIXxrfpRXYFm8FMms5WPp1XZqA3f+SZy/R/sc3KjU3tDp8CQIDAQAB",
     "background": {
         "scripts": [
             "background.js"

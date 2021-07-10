@@ -19,34 +19,27 @@ changeColor.onclick = function(element) {
 };
 
 async function getUserList(username, authToken) {
-    // Create the url
-    var url = baseUrl + "users/" + username + "/animelist";
-
-    //Add fields
-    url += "?fields=";
-    for(f in fields) {
-        url += fields[f];
-        if(fields[f] != fields[fields.length - 1])
-            url += ",";
-    }
-
-    //url = "https://cors-anywhere.herokuapp.com/" + url;
+    let res = await fetch('http://localhost:3000/hi');
+    let json = await res.json();
+    let nodes = json.data;
     
-    var res = await fetch(url, {
-        method: 'GET',
-        mode: 'cors',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': authToken
-        }
+    var builder = ["Subject,Start Date", '\n'];
+    for(i in nodes) {
+        console.log(i);
+        console.log(nodes[i].node);
+        var row = generateRow(nodes[i].node);
+        builder = builder.concat(row);
+    }
+    console.log(builder.join());
+    var blob = new Blob(builder, {type: "text/plain"});
+    var url = URL.createObjectURL(blob);
+    chrome.downloads.download({
+        url: url,
+        filename: "test.csv"
     });
+}
 
-    let text = await res.text()
-    console.log(text)
-
-    // var blob = new Blob(await res.json(), {type: "text/plain"});
-    // var dwnld = URL.createObjectURL(blob);
-    // chrome.downloads.download({
-    //     url: dwnld
-    // });
+function generateRow(node) {
+    var builder = [node.title + "," + node.start_date + "\n"];
+    return builder;
 }
