@@ -91,7 +91,7 @@ async function getUserList(authToken) {
 }
 
 async function buildForStatus(authToken, status) {
-    let res = await fetch('http://localhost:3000/malUserList?token=' + authToken + "&status=" + status);
+    let res = await fetch(`${serverURL}/malUserList?token=` + authToken + "&status=" + status);
     let json = await res.json();
     let data = json.data;
     var builder = [];
