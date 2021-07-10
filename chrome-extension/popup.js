@@ -24,7 +24,7 @@ changeColor.onclick = function(element) {
 };
 
 async function getUserList(username, authToken) {
-    let res = await fetch('http://localhost:3000/hi');
+    let res = await fetch('http://localhost:3000/malUserList');
     let json = await res.json();
     let data = json.data;
     
