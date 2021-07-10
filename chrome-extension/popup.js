@@ -94,13 +94,16 @@ async function buildForStatus(authToken, status) {
 function generateRows(node) {
     var builder = [];
     if (node.title && node.start_date && node.num_episodes) {
-
         // Get date/time of airing
         var date = new Date(node.start_date);
-        let timeString = node.broadcast.start_time;
-        let times = timeString.split(':');
-        date.setHours(times[0], times[1]);
-        date.setHours(date.getHours() - 16);
+
+        if(node.broadcast) {
+            let timeString = node.broadcast.start_time;
+            let times = timeString.split(':');
+            date.setHours(times[0], times[1]);
+            date.setHours(date.getHours() - 16);
+        }
+        
         for (let ep = 0; ep < node.num_episodes; ep++) {
             row = generateRow(node.title, date);
             builder = builder.concat(row);
