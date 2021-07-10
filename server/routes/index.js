@@ -35,11 +35,9 @@ router.post('/getToken', async function (req, res) {
 // Use express generator to run
 router.get('/malUserList', async function(req, res, next) {
   let token = req.query.token;
+  let status = req.query.status;
   let name = await getUserName(token);
-  console.log("Token: " + token);
-  console.log("Username: " + name);
-  res.send(await malRequest(name, token));
-
+  res.json(await malRequest(name, status, token));
 });
 
 router.get('/getUserName', async function(req, res, next) {
@@ -59,18 +57,16 @@ async function getUserName(token) {
   });
 
   let json = await userReq.json();
-  console.log("JSON: " + json);
   return json.name;
 }
 
-async function malRequest(name, auth) {
+async function malRequest(name, status, auth) {
   let baseUrl = "https://api.myanimelist.net/v2/";
   let fields = ["start_date", "end_date", "broadcast", "num_episodes", "status"];
   let authToken = auth ? auth : "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6IjYxMWZlMWI0ZGExZmM0NTMzOWY1NWEzYjkxNDY1NTMzODY5NGUyNjY0NjhjM2IzN2ExODY3NTZmYzc0MDA1MmRhMzFhODcyMjkxNWRkZmMxIn0.eyJhdWQiOiI0NGI0ZDU5ZDI2ZjNkZTE0NDc1ZjcyZTJmNGZlMzJlZSIsImp0aSI6IjYxMWZlMWI0ZGExZmM0NTMzOWY1NWEzYjkxNDY1NTMzODY5NGUyNjY0NjhjM2IzN2ExODY3NTZmYzc0MDA1MmRhMzFhODcyMjkxNWRkZmMxIiwiaWF0IjoxNjI1ODU1MTE0LCJuYmYiOjE2MjU4NTUxMTQsImV4cCI6MTYyODUzMzUxNCwic3ViIjoiMTMyNTY5MTciLCJzY29wZXMiOltdfQ.gj_X2waSBbiiuDYTQBXNgE8AFSAt6pTKgZJWnNdvRtMFGfdLeLBswnXPCyIUnxBfRrasR-W_vDQiK13oHhme3kyzRQp0x4akmUQBIEjuQttFGptjbcxFkU7Eqm_vbU5sNL1RpQ8Li2Y_t0OToIozlWAe5RMtQ2Rooh2EPnWRoUBkWveBXz6NXjsbhfD01qygDPOoSzo49i6oF9-AplBgsV4iwzTQZgXgGWX7E5rQc8FtwuwisqHHrecr6anKwS719H34DBbSU3vXg2OZMPVHGWDoIEs13aTdQ_2T0A1v0400P2t8U5Pi49TqrgqTEejO4Xk8zIjOMBtZMtUlfVJpKw";
   let username = name ? name : "NachoLife";
   // Create the url
   var url = baseUrl + "users/" + username + "/animelist";
-  console.log("GET: " + url);
 
   //Add fields
   url += "?fields=";
@@ -80,6 +76,9 @@ async function malRequest(name, auth) {
       url += ",";
   }
 
+  url += "&status=" + status;
+  
+  console.log("GET: " + url);
   var malRes = await fetch(url, {
     method: 'GET',
     mode: 'cors',

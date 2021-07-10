@@ -29,16 +29,11 @@ async function getToken() {
 }
 
 async function getUserList(authToken) {
-    let res = await fetch('http://localhost:3000/malUserList?token=' + authToken);
-    let json = await res.json();
-    let data = json.data;
+    var builder = ["Subject,Start Date,Start Time", '\n'];
+    
+    builder = builder.concat(await buildForStatus(authToken, "watching"));
+    builder = builder.concat(await buildForStatus(authToken, "plan_to_watch"));
 
-    var builder = ["Subject,Start Date, Start Time", '\n'];
-    for (i in data) {
-        var row = generateRows(data[i].node);
-        if (row)
-            builder = builder.concat(row);
-    }
     console.log(builder.join());
     var blob = new Blob(builder, { type: "text/plain" });
     var url = URL.createObjectURL(blob);
@@ -48,25 +43,41 @@ async function getUserList(authToken) {
     });
 }
 
+async function buildForStatus(authToken, status) {
+    let res = await fetch('http://localhost:3000/malUserList?token=' + authToken + "&status=" + status);
+    let json = await res.json();
+    let data = json.data;
+    var builder = [];
+    for (i in data) {
+        var row = generateRows(data[i].node);
+        if (row)
+            builder = builder.concat(row);
+    }
+    return builder;
+}
+
 function generateRows(node) {
     var builder = [];
     if (node.title && node.start_date && (node.num_episodes || node.end_date)) {
-        console.log("Made it!");
+
+        // Get date/time of airing
         var date = new Date(node.start_date);
+        let timeString = node.broadcast.start_time;
+        let times = timeString.split(':');
+        date.setHours(times[0], times[1]);
+        date.setHours(date.getHours() - 16);
         for (let ep = 0; ep < node.num_episodes; ep++) {
             row = generateRow(node.title, date);
-            console.log(row.join());
             builder = builder.concat(row);
             date.setDate(date.getDate() + 7);
         }
-        console.log(builder.join());
         return builder;
     }
     return null;
 }
 
-function generateRow(title, start) {
-    return [title + "," + getFormattedDate(start) + "\n"];
+function generateRow(title, date) {
+    return [title + "," + getFormattedDate(date) + "," + date.toLocaleTimeString() + "\n"];
 }
 
 function getFormattedDate(date) {
