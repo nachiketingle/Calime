@@ -1,6 +1,7 @@
 let changeColor = document.getElementById("changeColor");
 let baseUrl = "https://api.myanimelist.net/v2/";
 let fields = ["start_date", "end_date", "broadcast", "num_episodes", "status"];
+let serverURL = "http://localhost:3000";
 
 chrome.storage.sync.get("color", function (data) {
     changeColor.style.backgroundColor = data.color;
@@ -15,21 +16,36 @@ changeColor.onclick = function (element) {
             { code: 'document.body.style.backgroundColor = "' + color + '";' });
     });
 
-    chrome.runtime.sendMessage({ action: "authenticate" }, function (token) {
-        chrome.storage.sync.set({ token: token }, function () {
-            console.log('Token Set', token);
-        });
-    });
+    getToken().then(token => console.log(token));
 
-    getUserList(getToken());
+    // getUserList(getToken());
 };
 
-async function getToken() {
-    return "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6IjYxMWZlMWI0ZGExZmM0NTMzOWY1NWEzYjkxNDY1NTMzODY5NGUyNjY0NjhjM2IzN2ExODY3NTZmYzc0MDA1MmRhMzFhODcyMjkxNWRkZmMxIn0.eyJhdWQiOiI0NGI0ZDU5ZDI2ZjNkZTE0NDc1ZjcyZTJmNGZlMzJlZSIsImp0aSI6IjYxMWZlMWI0ZGExZmM0NTMzOWY1NWEzYjkxNDY1NTMzODY5NGUyNjY0NjhjM2IzN2ExODY3NTZmYzc0MDA1MmRhMzFhODcyMjkxNWRkZmMxIiwiaWF0IjoxNjI1ODU1MTE0LCJuYmYiOjE2MjU4NTUxMTQsImV4cCI6MTYyODUzMzUxNCwic3ViIjoiMTMyNTY5MTciLCJzY29wZXMiOltdfQ.gj_X2waSBbiiuDYTQBXNgE8AFSAt6pTKgZJWnNdvRtMFGfdLeLBswnXPCyIUnxBfRrasR-W_vDQiK13oHhme3kyzRQp0x4akmUQBIEjuQttFGptjbcxFkU7Eqm_vbU5sNL1RpQ8Li2Y_t0OToIozlWAe5RMtQ2Rooh2EPnWRoUBkWveBXz6NXjsbhfD01qygDPOoSzo49i6oF9-AplBgsV4iwzTQZgXgGWX7E5rQc8FtwuwisqHHrecr6anKwS719H34DBbSU3vXg2OZMPVHGWDoIEs13aTdQ_2T0A1v0400P2t8U5Pi49TqrgqTEejO4Xk8zIjOMBtZMtUlfVJpKw";
+function getToken() {
+    return new Promise(async resolve => {
+        // try to get a token 
+        chrome.storage.sync.get("token", function (data) {
+            if (data) {
+                console.log("Using existing token");
+                let token = data.token["access_token"];
+                await fetch(`${serverURL}/`)
+                resolve();
+            }
+            else {
+                console.log("Requesting new token");
+                chrome.runtime.sendMessage({ action: "authenticate" }, function (token) {
+                    chrome.storage.sync.set({ token: token }, function () {
+                        console.log('Token Set', token);
+                        resolve(data.token["access_token"]);
+                    });
+                });
+            }
+        });
+    })
 }
 
 async function getUserList(authToken) {
-    let res = await fetch('http://localhost:3000/malUserList');
+    let res = await fetch(`${serverURL}/malUserList`);
     let json = await res.json();
     let data = json.data;
 
