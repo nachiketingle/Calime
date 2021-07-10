@@ -1,4 +1,5 @@
 let color = '#3aa757'
+let serverURL = 'http://localhost:3000';
 
 chrome.runtime.onInstalled.addListener(() => {
     chrome.storage.sync.set({ color: color }, function () {
@@ -66,29 +67,36 @@ chrome.runtime.onMessage.addListener(
                 interactive: true,
                 url: authURL
             }, url => {
-                console.log("Authenticating user", url);
-                // parse the auth code
-                let authorization_code = getQueryVariable(url, 'code');
-
-                let data = {
-                    "client_id": clientID,
-                    "code": authorization_code,
-                    "code_verifier": code_challenge,
-                    "grant_type": "authorization_code",
-                    "redirect_uri": redirectURL
+                // user authenticated
+                if (url) {
+                    console.log("Authenticating user", url);
+                    // parse the auth code
+                    let authorization_code = getQueryVariable(url, 'code');
+    
+                    let data = {
+                        "client_id": clientID,
+                        "code": authorization_code,
+                        "code_verifier": code_challenge,
+                        "grant_type": "authorization_code",
+                        "redirect_uri": redirectURL
+                    }
+    
+                    // use auth code to trade in for an access token
+                    fetch(`${serverURL}/getToken`, {
+                        method: 'POST',
+                        mode: 'cors',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data) // body data type must match "Content-Type" header
+                    })
+                        .then(res => res.json())
+                        .then(json => sendResponse(json));
                 }
-
-                // use auth code to trade in for an access token
-                fetch('http://localhost:3000/getToken', {
-                    method: 'POST',
-                    mode: 'cors',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(data) // body data type must match "Content-Type" header
-                })
-                    .then(res => res.json())
-                    .then(json => sendResponse(json));
+                // user cancelled
+                else {
+                    sendResponse(undefined);
+                }                
             })
 
             return true;

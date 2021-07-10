@@ -25,31 +25,64 @@ function getToken() {
     return new Promise(async resolve => {
         // try to get a token 
         chrome.storage.sync.get("token", function (data) {
+            // if token cached
             if (data) {
                 console.log("Using existing token");
                 let token = data.token["access_token"];
-                await fetch(`${serverURL}/`)
-                resolve();
+                // get the username to check if token works
+                fetch(`${serverURL}/getUserName?token=Bearer ${token}`)
+                    .then(res => res.text())
+                    .then(username => {
+                        // if username exists, token works
+                        if (username) {
+                            // now need to check if correct username
+                            let usrConfirm = confirm(`Continue as ${username}?`);
+                            if (usrConfirm) {
+                                resolve(token);
+                            }
+                            else {
+                                requestNewToken().then(token => resolve(token));
+                            }
+                        }
+                        // if invalid, need to refresh token
+                        else {
+                            console.log("Token expired");
+                            requestNewToken().then(token => resolve(token));
+                        }
+                    })
+                resolve(token);
             }
+            // no token cached, new user
             else {
-                console.log("Requesting new token");
-                chrome.runtime.sendMessage({ action: "authenticate" }, function (token) {
-                    chrome.storage.sync.set({ token: token }, function () {
-                        console.log('Token Set', token);
-                        resolve(data.token["access_token"]);
-                    });
+                requestNewToken().then(token => resolve(token));
+            }
+        });
+    })
+}
+
+async function requestNewToken() {
+    return new Promise((resolve, reject) => {
+        console.log("Requesting new token");
+        chrome.runtime.sendMessage({ action: "authenticate" }, function (token) {
+            if (token) {
+                chrome.storage.sync.set({ token: token }, function () {
+                    console.log('Token Set', token);
+                    resolve(data.token["access_token"]);
                 });
+            }            
+            else {
+                reject('Cannot obtain token');
             }
         });
     })
 }
 
 async function getUserList(authToken) {
-    let res = await fetch(`${serverURL}/malUserList`);
+    let res = await fetch(`${serverURL}/malUserList?token=` + authToken);
     let json = await res.json();
     let data = json.data;
 
-    var builder = ["Subject,Start Date", '\n'];
+    var builder = ["Subject,Start Date, Start Time", '\n'];
     for (i in data) {
         var row = generateRows(data[i].node);
         if (row)
