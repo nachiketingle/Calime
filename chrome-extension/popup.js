@@ -28,14 +28,13 @@ changeColor.onclick = function (element) {
 async function getUserList(username, authToken) {
     let res = await fetch('http://localhost:3000/hi');
     let json = await res.json();
-    let nodes = json.data;
-
+    let data = json.data;
+    
     var builder = ["Subject,Start Date", '\n'];
-    for (i in nodes) {
-        console.log(i);
-        console.log(nodes[i].node);
-        var row = generateRow(nodes[i].node);
-        builder = builder.concat(row);
+    for(i in data) {
+        var row = generateRows(data[i].node);
+        if(row)
+            builder = builder.concat(row);
     }
     console.log(builder.join());
     var blob = new Blob(builder, { type: "text/plain" });
@@ -46,7 +45,35 @@ async function getUserList(username, authToken) {
     });
 }
 
-function generateRow(node) {
-    var builder = [node.title + "," + node.start_date + "\n"];
-    return builder;
+function generateRows(node) {
+    var builder = [];
+    if(node.title && node.start_date && (node.num_episodes || node.end_date)) {
+        console.log("Made it!");
+        var date = new Date(node.start_date);
+        for(let ep = 0; ep < node.num_episodes; ep++) {
+            row = generateRow(node.title, date);
+            console.log(row.join());
+            builder = builder.concat(row);
+            date.setDate(date.getDate() + 7);
+        }
+        console.log(builder.join());
+        return builder;
+    }
+    return null;
+}
+
+function generateRow(title, start) {
+    return [title + "," + getFormattedDate(start) + "\n"];
+}
+
+function getFormattedDate(date) {
+    var year = date.getFullYear();
+  
+    var month = (1 + date.getMonth()).toString();
+    month = month.length > 1 ? month : '0' + month;
+  
+    var day = date.getDate().toString();
+    day = day.length > 1 ? day : '0' + day;
+    
+    return month + '/' + day + '/' + year;
 }
