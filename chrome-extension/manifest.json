@@ -2,12 +2,15 @@
     "name": "Calime",
     "version": "1.0",
     "description": "A calender for your anime schedule",
-    "manifest_version": 3,
+    "manifest_version": 2,
     "background": {
-        "service_worker": "background.js"
+        "scripts": [
+            "background.js"
+        ],
+        "persistent": false
     },
-    "permissions": ["storage", "activeTab", "scripting"],
-    "action": {
+    "permissions": ["storage", "declarativeContent", "activeTab", "downloads"],
+    "page_action": {
         "default_popup": "popup.html",
         "default_icon": {
             "16": "/images/get_started16.png",
