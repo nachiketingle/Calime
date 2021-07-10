@@ -1,21 +1,9 @@
 let changeColor = document.getElementById("changeColor");
 let baseUrl = "https://api.myanimelist.net/v2/";
 let fields = ["start_date", "end_date", "broadcast", "num_episodes", "status"];
-let serverURL = "http://localhost:3000";
-
-chrome.storage.sync.get("color", function (data) {
-    changeColor.style.backgroundColor = data.color;
-    changeColor.setAttribute('value', data.color);
-});
+let serverURL = "https://calime.herokuapp.com";
 
 changeColor.onclick = function (element) {
-    let color = element.target.value;
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-        chrome.tabs.executeScript(
-            tabs[0].id,
-            { code: 'document.body.style.backgroundColor = "' + color + '";' });
-    });
-
     getToken().then(token => getUserList("Bearer " + token));
 };
 
@@ -86,7 +74,7 @@ async function getUserList(authToken) {
     var url = URL.createObjectURL(blob);
     chrome.downloads.download({
         url: url,
-        filename: "test.csv"
+        filename: `calime_${(new Date()).getTime()}.csv`
     });
 }
 
@@ -105,7 +93,7 @@ async function buildForStatus(authToken, status) {
 
 function generateRows(node) {
     var builder = [];
-    if (node.title && node.start_date && (node.num_episodes || node.end_date)) {
+    if (node.title && node.start_date && node.num_episodes) {
 
         // Get date/time of airing
         var date = new Date(node.start_date);

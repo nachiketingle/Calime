@@ -1,5 +1,5 @@
 let color = '#3aa757'
-let serverURL = 'http://localhost:3000';
+let serverURL = 'https://calime.herokuapp.com';
 
 chrome.runtime.onInstalled.addListener(() => {
     chrome.storage.sync.set({ color: color }, function () {
