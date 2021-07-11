@@ -1,7 +1,8 @@
 let changeColor = document.getElementById("changeColor");
 let baseUrl = "https://api.myanimelist.net/v2/";
 let fields = ["start_date", "end_date", "broadcast", "num_episodes", "status"];
-let serverURL = "https://calime.herokuapp.com";
+let useRemoteServer = true;
+let serverURL = useRemoteServer ? "https://calime.herokuapp.com" : "http://localhost:3000";
 
 changeColor.onclick = function (element) {
     getToken().then(token => getUserList("Bearer " + token));
@@ -65,9 +66,31 @@ async function requestNewToken() {
 
 async function getUserList(authToken) {
     var builder = ["Subject,Start Date,Start Time", '\n'];
+
+    var json = await getJson(authToken, "watching");
+    do {
+        builder = builder.concat(await buildFromData(json.data));
+        if(json.paging.next) {
+            let url = json.paging.next;
+            console.log(url);
+            json = await getJsonUrl(authToken, url);
+        }
+    } while(json.paging.next);
+
+    json = await getJson(authToken, "plan_to_watch");
+    console.log(json);
+    do {
+        builder = builder.concat(await buildFromData(json.data));
+        if(json.paging.next) {
+            let url = json.paging.next;
+            console.log(url);
+            json = await getJsonUrl(authToken, url);
+        }
+        console.log(json);
+        //console.log(builder.join());
+    } while(json.paging.next);
     
-    builder = builder.concat(await buildForStatus(authToken, "watching"));
-    builder = builder.concat(await buildForStatus(authToken, "plan_to_watch"));
+    //builder = builder.concat(await buildForStatus(authToken, "plan_to_watch"));
 
     console.log(builder.join());
     var blob = new Blob(builder, { type: "text/plain" });
@@ -78,24 +101,46 @@ async function getUserList(authToken) {
     });
 }
 
-async function buildForStatus(authToken, status) {
-    let res = await fetch(`${serverURL}/malUserList?token=` + authToken + "&status=" + status);
-    let json = await res.json();
-    let data = json.data;
+async function getJson(authToken, status) {
+    let res = await fetch(`${serverURL}/malUserList?token=` + authToken + "&status=" + status + "&limit=500");
+    return await res.json();
+}
+
+async function getJsonUrl(authToken, url) {
+    let res = await fetch(`${serverURL}/malUserNextList?token=${authToken}&url=${url}`);
+    return await res.json();
+}
+
+function buildFromData(data) {
+    console.log(data);
     var builder = [];
     for (i in data) {
         var row = generateRows(data[i].node);
-        if (row)
+        
+        if (row) {
+            console.log(`${i}: ${row.join()}`);
             builder = builder.concat(row);
+        }
     }
+    console.log(builder.join());
     return builder;
 }
 
 function generateRows(node) {
     var builder = [];
-    if (node.title && node.start_date && node.num_episodes) {
+    console.log(node);
+    if (node.title && node.start_date) {
+        if(node.num_episodes == 0) {
+            node.num_episodes = 12;
+        }
         // Get date/time of airing
         var date = new Date(node.start_date);
+
+        if(node.end_date) {
+            var endDate = new Date(node.end_date);
+            if(endDate < new Date())
+                return builder;
+        }
 
         if(node.broadcast) {
             let timeString = node.broadcast.start_time;
