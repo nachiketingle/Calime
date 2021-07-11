@@ -160,7 +160,7 @@ function generateRows(node) {
 }
 
 function generateRow(title, date) {
-    return [title + "," + getFormattedDate(date) + "," + date.toLocaleTimeString() + "\n"];
+    return [title.replace(',', '') + "," + getFormattedDate(date) + "," + date.toLocaleTimeString() + "\n"];
 }
 
 function getFormattedDate(date) {
